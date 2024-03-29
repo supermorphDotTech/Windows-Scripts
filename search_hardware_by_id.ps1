@@ -6,6 +6,9 @@
 # for instance the event viewer references a device error, it is usually not clear which
 # device that would refer to. This script however, will make it clear.
 
+# The search uses likeness, which means you can also just use for a snippet of the
+# hardware ID (i.e. PCI\VEN_1022).
+
 # **************************************** #
 ### EXECUTION
 # **************************************** #

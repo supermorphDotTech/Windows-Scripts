@@ -6,10 +6,6 @@
 # for instance the event viewer references a device error, it is usually not clear which
 # device that would refer to. This script however, will make it clear.
 
-### KNOWN BUGS
-# Please take not that for reasons unknown to me, sometimes the CimInstance will not fetch
-# the friendly names. If you know why, please let me know so I can fix that.
-
 # **************************************** #
 ### EXECUTION
 # **************************************** #

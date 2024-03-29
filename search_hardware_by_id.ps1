@@ -27,7 +27,7 @@ $deviceDetected = $false
 $enum = 0
 
 # Define device search
-$deviceList = Get-CimInstance -ClassName Win32_PNPEntity | Select-Object -Property FriendlyName, DeviceID
+$deviceList = Get-PnpDevice | Select-Object -Property FriendlyName, DeviceID
 
 # Loop through the registry entries.
 foreach($device in $deviceList) {

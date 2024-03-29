@@ -20,7 +20,3 @@ or Windows 11 Distributions.
 This PowerShell script searches for the user friendly names of hardware devices. So if
 for instance the event viewer references a device error, it is usually not clear which
 device that would refer to. This script however, will make it clear.
-
-###### Known Bugs
-Please take note that for reasons unknown to me, sometimes the CimInstance will not fetch
-the friendly names. If you know why, please let me know so I can fix that.

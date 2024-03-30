@@ -1,7 +1,7 @@
 # Windows-Scripts
 A collection of miscellaneous scripts for use with Microsoft Windows systems.
 
-# registry_query_and_delete_dgtrayicon.ps1
+# dgtrayicon_cleanup.ps1
 
 This PowerShell script needs to be run with elevated privileges. It searches for
 remnants in of dgtrayicon.exe leftover in the registry and temp-files. This script
@@ -21,5 +21,5 @@ This PowerShell script searches for the user friendly names of hardware devices.
 for instance the event viewer references a device error, it is usually not clear which
 device that would refer to. This script however, will make it clear.
 
-The search uses likeness, which means you can also just use for a snippet of the
+The search uses likeness, which means you can also just search for a snippet of the
 hardware ID (i.e. PCI\VEN_1022).

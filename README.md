@@ -23,3 +23,12 @@ device that would refer to. This script however, will make it clear.
 
 The search uses likeness, which means you can also just search for a snippet of the
 hardware ID (i.e. PCI\VEN_1022).
+
+# search_hardware_by_name.ps1
+
+This PowerShell script searches for the user friendly names of hardware devices. So if
+you search for either the class a device is associated with or if the hardware ID is
+needed, this script will help.
+
+The search uses likeness, which means you can also just search for a snippet of the
+device name (i.e. amd).

@@ -1,5 +1,5 @@
 <#
-.Synopsis
+.SYNOPSIS
 	Searches for user friendly names of hardware devices (i.e. gpu or amd).
 .DESCRIPTION
 	This PowerShell script searches for the user friendly names of hardware devices. So if

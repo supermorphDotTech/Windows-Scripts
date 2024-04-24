@@ -53,7 +53,7 @@
 #---------------------------------------------------
 
 #Client Name
-$sClientName = "$env:Computername"
+$sClientName = $env:Computername
 
 #User Name
 $sUserName = $env:USERNAME

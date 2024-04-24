@@ -24,10 +24,10 @@
 	For debugging, see the transcript created in $sTranscript
 	(default is C:\Windows\Temp\USERNAME\SCRIPTNAME.log).
 	
-	Author:			###
-	Creation Date:	###
-	Modified Date:	###
-	Version:		v1.0
+	Author:		Bastian Neuwirth
+	Creation Date:	29.03.2024
+	Modified Date:	24.04.2024
+	Version:	v1.0
 	
 	Changelog
 		v1.0

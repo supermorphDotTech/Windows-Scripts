@@ -15,7 +15,7 @@ or Windows 11 Distributions.
 2) Search for registry entries referring to dgtrayicon.exe
 3) Delete the regarding icons of the registry remnants in [USERPROFILE]\AppData\Local\Temp
 
-## powershell_script.ps1
+## powershell_template.ps1
 
 This PowerShell script serves as a template for all existing and future powershell scripts.
 It will create a transcript in

@@ -12,10 +12,15 @@
 .OUTPUTS
 	Output from this cmdlet (if any)
 .NOTES
+	Visit supermorph.tech on
+		https://github.com/supermorphDotTech
+	for more cool stuff or check out the homepage
+		https://www.supermorph.tech/
+		
 	For debugging, see the transcript created in $sTranscript
-	(default is C:\Windows\Temp\USERNAME).
+	(default is C:\Windows\Temp\USERNAME\SCRIPTNAME.log).
 	
-	Author:			Bastian Neuwirth
+	Author:			###
 	Creation Date:	###
 	Modified Date:	###
 	Version:		v0.1
@@ -29,6 +34,18 @@
 	Role this cmdlet takes within the component
 .FUNCTIONALITY
 	Functionality that best describes this cmdlet
+	
+	!! LIMITATIONS !!
+	Every script/module being executed from this template as the main
+	process needs to have it's own unique filename disregarding of it's
+	actual file path. Otherwise these scripts/modules will try to write
+	the very same file.
+
+	Due to how transcripts work in powershell, running multiple instances
+	and multiple transcripts at the same time may lead to errors. The
+	command Stop-Transcript will only stop the last transcript started. In
+	case of multiple instances it may lead to loss of data or even file I/O
+	collisions.
 #>
 
 #---------------------------------------------------

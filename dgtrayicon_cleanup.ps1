@@ -1,5 +1,5 @@
 <#
-.Synopsis
+.SYNOPSIS
 	This script mitigates a bug of AMD XConnect (dgtrayicon.exe) that will lead to
 	accumulation of registry entries and Task Bar icons.
 .DESCRIPTION

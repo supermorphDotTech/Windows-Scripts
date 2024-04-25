@@ -87,9 +87,6 @@ $ErrorActionPreference = "SilentlyContinue"
 #..................[Declarations]...................
 #---------------------------------------------------
 
-#Script Version
-$sScriptVersion = "0.1"
-
 #Script name
 $sScriptName = "search_hardware_by_name.ps1"
 

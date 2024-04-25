@@ -85,9 +85,6 @@ $ErrorActionPreference = "SilentlyContinue"
 #..................[Declarations]...................
 #---------------------------------------------------
 
-#Script Version
-$sScriptVersion = "0.1"
-
 #Script name
 $sScriptName = "dgtrayicon_cleanup.ps1"
 

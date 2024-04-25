@@ -77,9 +77,6 @@ $ErrorActionPreference = "SilentlyContinue"
 #..................[Declarations]...................
 #---------------------------------------------------
 
-#Script Version
-$sScriptVersion = "0.1"
-
 #Script name
 $sScriptName = "Script Name"
 

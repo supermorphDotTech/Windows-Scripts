@@ -3,12 +3,11 @@ A collection of miscellaneous scripts for use with Microsoft Windows systems.
 
 ## dgtrayicon_cleanup.ps1
 
-This PowerShell script needs to be run with elevated privileges. It searches for
-remnants in of dgtrayicon.exe leftover in the registry and temp-files. This script
-is intendet to be run at user login, but may be executed at any time, since it
-spares the running app instance from deletion. The script has been tested with
-Windows 11 Pro 23H2 and should in theory be fully compatible with all Windows 10
-or Windows 11 Distributions.
+This script searches for remnants of dgtrayicon.exe (AMD XConnect) leftover in the
+registry and temp-files. It is intendet to be run at user login, but may be executed
+at any time, since it spares the running app instance from deletion. The script has
+been tested with Windows 11 Pro 23H2 and should in theory be fully compatible with
+all Windows 10 or Windows 11 Distributions.
 
 ###### What it does:
 1) Identify the running AMD XConnect instance key

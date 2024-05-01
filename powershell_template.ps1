@@ -14,7 +14,7 @@
 .NOTES
 	Visit supermorph.tech on
 		https://github.com/supermorphDotTech
-	for more cool stuff or check out the homepage
+	for more modules and other cool stuff check out the homepage
 		https://www.supermorph.tech/
 		
 	For debugging, see the transcript created in $sTranscript
@@ -77,6 +77,9 @@ $ErrorActionPreference = "SilentlyContinue"
 #..................[Declarations]...................
 #---------------------------------------------------
 
+#Script Version
+$sScriptVersion = "v0.1"
+
 #Script name
 $sScriptName = "Script Name"
 
@@ -88,31 +91,35 @@ $sLogName = "$sScriptName.log"
 #....................[Functions]....................
 #---------------------------------------------------
 
-Function fctMyFunction{
-	Param()
+function fctMyFunction{
+	PARAM(
+		[string]$sStringVar
+		[int]$sIntVar
+		#...
+	)
   
 	BEGIN {
 		$bErrors = $false
 	}
-  
+
 	PROCESS {
-		Try{
+		try{
 			#MY CODE
-	}
-		Catch{
+		}
+		catch{
 			$bErrors = $true
 			Write-Output "ERROR: $_.Exception"
 		}
 	}
-  
+
 	END {
-		If($bErrors){
+		if($bErrors){
 			#Stop the Script on Error
 			Write-Output "ERROR: Execution stopped."
 			if ($bTranscriptEnable) {
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -127,6 +134,11 @@ if ($bTranscriptEnable) {
 	$sTranscript = Join-Path -Path $sLogFolder -ChildPath $sLogName
 	Start-Transcript -Path $sTranscript
 }
+
+Write-Output "`n******************************************"
+Write-Output "   $sScriptName"
+Write-Output "   $sScriptVersion"
+Write-Output "******************************************"
 
 #---------------------------------------------------
 #....................[Execution]....................

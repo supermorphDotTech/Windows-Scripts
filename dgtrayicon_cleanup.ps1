@@ -1,8 +1,11 @@
 <#
 .SYNOPSIS
 	This script mitigates a bug of AMD XConnect (dgtrayicon.exe) that will lead to
-	accumulation of registry entries and Task Bar icons.
+	accumulation of registry entries and Task Bar icons. It is developed for
+	Windows 11, but should work seamlessly with Windows 10.
 .DESCRIPTION
+	This script mitigates a bug of AMD XConnect (dgtrayicon.exe) that will lead to
+	accumulation of registry entries and Task Bar icons. 
 	This PowerShell script needs to be run with elevated privileges. It searches for
 	remnants in of dgtrayicon.exe leftover in the registry and temp-files. This script
 	is intendet to be run at user login, but may be executed at any time, since it
@@ -10,32 +13,31 @@
 	Windows 11 Pro 23H2 and should in theory be fully compatible with all Windows 10
 	or Windows 11 Distributions.
 .EXAMPLE
-	Just run the script with elevated privileges.
+	Run the script with elevated privileges, preferably by GPO at
+	user login.
 .INPUTS
-	None.
+	None
 .OUTPUTS
-	None.
+	None
 .NOTES
 	Visit supermorph.tech on
 		https://github.com/supermorphDotTech
-	for more cool stuff or check out the homepage
+	for more modules and other cool stuff check out the homepage
 		https://www.supermorph.tech/
 		
 	For debugging, see the transcript created in $sTranscript
 	(default is C:\Windows\Temp\USERNAME\SCRIPTNAME.log).
 	
-	Author:		Bastian Neuwirth
-	Creation Date:	29.03.2024
-	Modified Date:	24.04.2024
-	Version:	v1.0
+	Author:			Bastian Neuwirth
+	Creation Date:	01.05.2024
+	Modified Date:	-
+	Version:		v0.1
 	
 	Changelog
-		v1.0
-			Updated syntax and overall form in line with the template.
 		v0.1
 			Initial creation.
 .COMPONENT
-	None.
+	None
 .ROLE
 	Bug mitigation and registry cleanup.
 .FUNCTIONALITY
@@ -85,286 +87,131 @@ $ErrorActionPreference = "SilentlyContinue"
 #..................[Declarations]...................
 #---------------------------------------------------
 
+#Script Version
+$sScriptVersion = "v0.1"
+
 #Script name
-$sScriptName = "dgtrayicon_cleanup.ps1"
+$sScriptName = "amd_egpu_win11_fixes"
 
 #Transcription (Log)
 $bTranscriptEnable = $true
 $sLogName = "$sScriptName.log"
 
+#eGPU name by likeness (i.e. 4080)
+#> Make sure only a single device is detected.
+$sEgpuSearch = "AMD Radeon RX 7800 XT"
+
+#iGPU or dGPU name by likeness (i.e. 4080)
+#> Make sure only a single device is detected.
+$sIgpuSearch = "AMD Radeon(TM) Graphics"
+
 #---------------------------------------------------
 #....................[Functions]....................
 #---------------------------------------------------
 
-Function fctIdentifyLegitRegistryEntry{
-	Param()
+function fctSearchHardware{
+	PARAM(
+		[string]$nameSnippet
+	)
   
 	BEGIN {
 		$bErrors = $false
 	}
 
 	PROCESS {
-		Try{
-			Write-Output "`n******************************************"
-			Write-Output "IDENTIFY THE CURRENT LEGIT REGISTRY ENTRY"
-			Write-Output "******************************************"
-
-			# Define the Registry folder to search through.
-			$RegPath = "Registry::HKEY_CURRENT_USER\Software\Classes\AppUserModelId"
-
-			# Get all Keys in ..\NotifyIconSettings and convert it to only the PSChildName.
-			$RegItems_NotifyIconSettings = (Get-ChildItem -Path $RegPath -Recurse | Select PSChildName).PSChildName
+		try{
+			Write-Output "`nSearching for device `"$nameSnippet`""
 
 			# Initialize evaluation
-			$RunningAppDetected = $false
+			$deviceDetected = $false
+			$enum = 0
+
+			# Define device search
+			$deviceList = Get-PnpDevice | Select-Object -Property Status, Class, FriendlyName, DeviceID
 
 			# Loop through the registry entries.
-			foreach($RegItem in $RegItems_NotifyIconSettings) {
+			foreach($device in $deviceList) {
 				
-				# Filter for NotifyIconGeneratedAumid
-				if ($RegItem -Like 'NotifyIconGeneratedAumid*') {
+				$deviceName = $device.FriendlyName
+				$searchTerm = "*$($nameSnippet)*"
+				
+				if ($deviceName -eq $null) { continue }
+				
+				# Filter for devices matching the search term.
+				if ($deviceName.Replace(" ","") -like $searchTerm.Replace(" ","")) {
 					
-					# Check if app is dgtrayicon.exe
-					$regItemApp = Get-ItemPropertyValue -Path "$RegPath\$RegItem" -Name "DisplayName"
+					$enum++
 					
-					if ($regItemApp -eq "dgtrayicon.exe") {
-						$RunningAppDetected = $true
-						$RunningAppKey = $RegItem.Split("_")[1]
-						Write-Output "`nAMD XConnect current Key: $($RunningAppKey) ($regItemApp)"
+					if ($enum -eq 1) {
+					Write-Output "`n[NR]..[STATUS]..[CLASS]..[NAME]..[ID]`n"
 					}
+					
+					$deviceDetected = $true
+					$deviceID = $device.DeviceID
+					$deviceStatus = $device.Status
+					$deviceClass = $device.Class
+					Write-Output "[$($enum)] [$($deviceStatus)] $($deviceClass) | $($deviceName) | $($deviceID)"
+					
+					# Store temporary device
+					$sGpuName = $deviceName
+					$sGpuId = $deviceID
+					$arrReturn = @($sGpuName, $sGpuId)
 				}
 			}
-
-			# Report, if no matching item was found.
-			if($RunningAppDetected -eq $false) {
-				Write-Output "'nNo running instance of AMD XConnect detected."
+			
+			# Abort execution, if more than 1 device was found. Search term needs to lead to
+			# a single device.
+			if ($enum -gt 1) {
+				Read-Host "`nERROR - The search term `"$nameSnippet`" is not in one-to-one relation to a device. Please specify it further.`nPress `"Return`" to exit."
+				exit
 			}
-
-	}
-		Catch{
+		}
+		catch{
 			$bErrors = $true
 			Write-Output "ERROR: $_.Exception"
 		}
 	}
 
 	END {
-		If($bErrors){
+		if($bErrors){
 			#Stop the Script on Error
 			Write-Output "ERROR: Execution stopped."
 			if ($bTranscriptEnable) {
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
-			#MY CODE IF NO ERRORS
+			Write-Output "`nDevice `"$sGpuName`" detected. Executing fixes..."
+			return $sGpuName, $sGpuId
 		}
 	}
 }
 
-Function fctRegCleanup_HKEY_CURRENT_USER{
-	Param()
+Function fctMyFunction{
+	PARAM()
   
 	BEGIN {
 		$bErrors = $false
 	}
 
 	PROCESS {
-		Try{
-			Write-Output "`n******************************************"
-			Write-Output "   SEARCH AND DELETE REGISTRY REMNANTS"
-			Write-Output "   HKEY_CURRENT_USER"
-			Write-Output "******************************************"
-
-			# Define the Registry folder to loop through.
-			$RegPath = "Registry::HKEY_CURRENT_USER\Control Panel\NotifyIconSettings"
-
-			# Get all Keys in ..\NotifyIconSettings and convert it to only the PSChildName.
-			$RegItems_NotifyIconSettings = (Get-ChildItem -Path $RegPath -Recurse | Select PSChildName).PSChildName
-
-			# Initialize evaluation
-			$RemnantDetected = $false
-
-			# Loop through the registry entries.
-			foreach($RegItem in $RegItems_NotifyIconSettings) {
-				
-				# Skip deletion of registry key if belonging to running AMD XConnect instance
-				if ($RegItem -Like $RunningAppKey) {
-					Write-Output "`nRunning instance of AMD XConnect skipped: $($RegItem)"
-					continue
-				}
-				
-				# Build the registry path.
-				$CurrentRegItemPath = $RegPath + "\" + $RegItem
-				
-				# Get the App-Name.
-				$CurrentRegItemExecutablePath = Get-ItemPropertyValue -Path $CurrentRegItemPath -Name "ExecutablePath"
-				
-				# Filter for dgtrayicon and delete the entry. Also delete an associated
-				# temp file, if found.
-				if ($CurrentRegItemExecutablePath -Like '*dgtrayicon*') {
-					
-					$RemnantDetected = $true
-					Write-Output "`nKey property detected: $($CurrentRegItemExecutablePath)"
-					
-					Remove-Item -Path $CurrentRegItemPath
-					Write-Output "Registry entry deleted: $($CurrentRegItemPath)"
-					
-					$TempFile = "$($env:LOCALAPPDATA)\Temp\NotifyIconGeneratedAumid_$($RegItem).png"
-					if (Test-Path $TempFile) {
-						Remove-Item -Path $TempFile
-						Write-Output "Temp file deleted: $($TempFile)"
-					} else {
-						Write-Output "Associated temp file not found."
-					}
-				}
-			}
-	}
-		Catch{
+		try{
+			#MY CODE
+		}
+		catch{
 			$bErrors = $true
 			Write-Output "ERROR: $_.Exception"
 		}
 	}
 
 	END {
-		If($bErrors){
+		if($bErrors){
 			#Stop the Script on Error
 			Write-Output "ERROR: Execution stopped."
 			if ($bTranscriptEnable) {
 				Stop-Transcript
 			}
-			Exit
-		} else {
-			#MY CODE IF NO ERRORS
-		}
-	}
-}
-
-Function fctRegCleanup_HKEY_USERS{
-	Param()
-  
-	BEGIN {
-		$bErrors = $false
-	}
-
-	PROCESS {
-		Try{
-			Write-Output "`n******************************************"
-			Write-Output "   SEARCH AND DELETE REGISTRY REMNANTS"
-			Write-Output "   HKEY_USERS"
-			Write-Output "******************************************`n"
-
-			# Define the Registry folder to loop through.
-			$RegPath = "Registry::HKEY_USERS"
-			$RegUsers = (Get-ChildItem -Path $RegPath)
-
-			# Loop through user entries to identify registry remnants
-			foreach($user in $RegUsers) {
-				
-				$iconSubPath = "Control Panel\NotifyIconSettings"
-				$UserNotifyRegPath = "Registry::$($user)\$($iconSubPath)"
-				
-				# Search for \Control Panel\NotifyIconSettings, otherwise skip
-				if (Test-Path $UserNotifyRegPath) {
-					Write-Output "Icon Path found: $($UserNotifyRegPath)"
-				} else {
-					continue
-				}
-				
-				# Get all Keys in ..\NotifyIconSettings and convert it to only the PSChildName.
-				$RegItems_NotifyIconSettings = (Get-ChildItem -Path $UserNotifyRegPath -Recurse | Select PSChildName).PSChildName
-
-				# Loop through the registry entries.
-				foreach($RegItem in $RegItems_NotifyIconSettings) {
-					
-					# Skip deletion of registry key if belonging to running AMD XConnect instance
-					if ($RegItem -Like $RunningAppKey) {
-						Write-Output "`nRunning instance of AMD XConnect skipped: $($RegItem)"
-						continue
-					}
-					
-					# Build the registry path.
-					$CurrentRegItemPath = $UserNotifyRegPath + "\" + $RegItem
-					
-					# Get the App-Name.
-					$CurrentRegItemExecutablePath = Get-ItemPropertyValue -Path $CurrentRegItemPath -Name "ExecutablePath"
-					
-					# Filter for dgtrayicon and delete the entry. Also delete an associated
-					# temp file, if found.
-					if ($CurrentRegItemExecutablePath -Like '*dgtrayicon*') {
-						
-						$RemnantDetected = $true
-						Write-Output "`nKey property detected: $($CurrentRegItemExecutablePath)"
-						
-						Remove-Item -Path $CurrentRegItemPath
-						Write-Output "Registry entry deleted: $($CurrentRegItemPath)"
-						
-						$TempFile = "$($env:LOCALAPPDATA)\Temp\NotifyIconGeneratedAumid_$($RegItem).png"
-						if (Test-Path $TempFile) {
-							Remove-Item -Path $TempFile
-							Write-Output "Temp file deleted: $($TempFile)"
-						} else {
-							Write-Output "Associated temp file not found."
-						}
-					}
-				}
-			}
-		}
-		Catch{
-			$bErrors = $true
-			Write-Output "ERROR: $_.Exception"
-		}
-	}
-
-	END {
-		If($bErrors){
-			#Stop the Script on Error
-			Write-Output "ERROR: Execution stopped."
-			if ($bTranscriptEnable) {
-				Stop-Transcript
-			}
-			Exit
-		} else {
-			#MY CODE IF NO ERRORS
-		}
-	}
-}
-
-Function fctFinishUp{
-	Param()
-  
-	BEGIN {
-		$bErrors = $false
-	}
-
-	PROCESS {
-		Try{
-			# Report, if no matching item was found.
-			if($RemnantDetected -eq $false) {
-				Write-Output "`nNo matching keys found."
-			}
-
-			Write-Output "`n******************************************"
-			Write-Output "   DONE. CONSIDER SUPPORTING MY PROJECTS."
-			Write-Output "   https://www.supermorph.tech/"
-			Write-Output "******************************************`n"
-
-			# Wait for user to exit script.
-			# Read-Host -Prompt "Press Enter to exit"
-		}
-		Catch{
-			$bErrors = $true
-			Write-Output "ERROR: $_.Exception"
-		}
-	}
-
-	END {
-		If($bErrors){
-			#Stop the Script on Error
-			Write-Output "ERROR: Execution stopped."
-			if ($bTranscriptEnable) {
-				Stop-Transcript
-			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -380,14 +227,31 @@ if ($bTranscriptEnable) {
 	Start-Transcript -Path $sTranscript
 }
 
+Write-Output "`n******************************************"
+Write-Output "   $sScriptName"
+Write-Output "   $sScriptVersion"
+Write-Output "******************************************"
+
 #---------------------------------------------------
 #....................[Execution]....................
 #---------------------------------------------------
 
-fctIdentifyLegitRegistryEntry
-fctRegCleanup_HKEY_CURRENT_USER
-fctRegCleanup_HKEY_USERS
-fctFinishUp
+$sEgpuName, $sEgpuId = fctSearchHardware $sEgpuSearch
+
+# $arrEgpu = (fctSearchHardware $sEgpuSearch)[-1]
+# $sEgpuName = $arrEgpu[0]
+# $sEgpuId = $arrEgpu[1]
+
+# fctSearchHardware $sEgpuSearch
+# $sEgpuName = $arrReturn[0]
+# $sEgpuId = $arrReturn[1]
+
+# $sEgpuName = $sGpuName
+# $sEgpuId = $sGpuId
+
+Write-Output "TEST`n $($sEgpuName)"
+Write-Output "TEST`n $($sEgpuId)"
+Write-Output "`neGPU detected. Searching for integrated`/dedicated GPU now."
 
 #---------------------------------------------------
 #..................[Transcription]...END............

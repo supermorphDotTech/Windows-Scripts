@@ -32,6 +32,12 @@ transcripts at the same time may lead to errors. The command Stop-Transcript wil
 only stop the last transcript started. In case of multiple instances it may lead
 to loss of data or even file I/O collisions.
 
+## run_ps_script.cmd
+
+This Batch script is used to run a PowerShell script without typing to console.
+The PowerShell script is meant to be put into the same directory, however the
+variables *scriptName* and *scriptDir* may both be modified.
+
 ## search_hardware_by_id.ps1
 
 This PowerShell script searches for the user friendly names of hardware devices. So if

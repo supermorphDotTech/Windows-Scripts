@@ -55,3 +55,12 @@ needed, this script will help.
 
 The search uses likeness, which means you can also just search for a snippet of the
 device name (i.e. amd).
+
+## system_health_log.ps1
+
+Log system health data to a file. The SystemHealthLog.txt will be stored in the
+same directory as the script.
+
+## wifi_passwords.ps1
+
+Save all Wifi Passwords saved in the PC to a file. Run the script and follow the prompts.

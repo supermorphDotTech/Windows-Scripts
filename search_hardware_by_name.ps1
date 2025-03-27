@@ -22,7 +22,7 @@
 .NOTES
 	Visit supermorph.tech on
 		https://github.com/supermorphDotTech
-	for more cool stuff or check out the homepage
+	for more modules and other cool stuff check out the homepage
 		https://www.supermorph.tech/
 		
 	For debugging, see the transcript created in $sTranscript
@@ -30,10 +30,14 @@
 	
 	Author:			Bastian Neuwirth
 	Creation Date:	29.03.2024
-	Modified Date:	24.04.2024
-	Version:		v1.0
+	Modified Date:	01.05.2024
+	Version:		v1.2
 	
 	Changelog
+		v1.2
+			Corrected the Write-Output and script version.
+		v1.1
+			Added transcription of the actually running script version.
 		v1.0
 			Updated syntax and overall form in line with the template.
 		v0.1
@@ -87,6 +91,9 @@ $ErrorActionPreference = "SilentlyContinue"
 #..................[Declarations]...................
 #---------------------------------------------------
 
+#Script Version
+$sScriptVersion = "v1.2"
+
 #Script name
 $sScriptName = "search_hardware_by_name.ps1"
 
@@ -98,17 +105,17 @@ $sLogName = "$sScriptName.log"
 #....................[Functions]....................
 #---------------------------------------------------
 
-Function fctSearchHardware{
-	Param()
+function fctSearchHardware{
+	PARAM()
   
 	BEGIN {
 		$bErrors = $false
 	}
 
 	PROCESS {
-		Try{
+		try{
 			Write-Output "`n******************************************"
-			Write-Output "    SEARCH FOR HARDWARE DEVICE BY ID"
+			Write-Output "    SEARCH FOR HARDWARE DEVICE BY NAME"
 			Write-Output "******************************************"
 
 			# Request user input for PCI ID
@@ -147,20 +154,20 @@ Function fctSearchHardware{
 				}
 			}
 		}
-		Catch{
+		catch{
 			$bErrors = $true
 			Write-Output "ERROR: $_.Exception"
 		}
 	}
 
 	END {
-		If($bErrors){
+		if($bErrors){
 			#Stop the Script on Error
 			Write-Output "ERROR: Execution stopped."
 			if ($bTranscriptEnable) {
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -175,6 +182,11 @@ if ($bTranscriptEnable) {
 	$sTranscript = Join-Path -Path $sLogFolder -ChildPath $sLogName
 	Start-Transcript -Path $sTranscript
 }
+
+Write-Output "`n******************************************"
+Write-Output "   $sScriptName"
+Write-Output "   $sScriptVersion"
+Write-Output "******************************************"
 
 #---------------------------------------------------
 #....................[Execution]....................

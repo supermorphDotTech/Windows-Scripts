@@ -26,7 +26,7 @@
 .NOTES
 	Visit supermorph.tech on
 		https://github.com/supermorphDotTech
-	for more cool stuff or check out the homepage
+	for more modules and other cool stuff check out the homepage
 		https://www.supermorph.tech/
 		
 	For debugging, see the transcript created in $sTranscript
@@ -34,10 +34,12 @@
 	
 	Author:			Bastian Neuwirth
 	Creation Date:	29.03.2024
-	Modified Date:	24.04.2024
-	Version:		v1.0
+	Modified Date:	29.04.2024
+	Version:		v1.1
 	
 	Changelog
+		v1.1
+			Added transcription of the actually running script version.
 		v1.0
 			Updated syntax and overall form in line with the template.
 		v0.1
@@ -90,6 +92,9 @@ $ErrorActionPreference = "SilentlyContinue"
 #---------------------------------------------------
 #..................[Declarations]...................
 #---------------------------------------------------
+
+#Script Version
+$sScriptVersion = "v1.1"
 
 #Script name
 $sScriptName = "search_hardware_by_id.ps1"
@@ -176,6 +181,11 @@ if ($bTranscriptEnable) {
 	$sTranscript = Join-Path -Path $sLogFolder -ChildPath $sLogName
 	Start-Transcript -Path $sTranscript
 }
+
+Write-Output "`n******************************************"
+Write-Output "   $sScriptName"
+Write-Output "   $sScriptVersion"
+Write-Output "******************************************"
 
 #---------------------------------------------------
 #....................[Execution]....................

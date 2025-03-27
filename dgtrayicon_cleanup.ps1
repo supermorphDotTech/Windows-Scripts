@@ -26,10 +26,12 @@
 	
 	Author:			Bastian Neuwirth
 	Creation Date:	29.03.2024
-	Modified Date:	29.04.2024
-	Version:		v1.1
+	Modified Date:	30.10.2024
+	Version:		v1.2
 	
 	Changelog
+		v1.2
+			Changed variable names to fit the smph standard nomenclature
 		v1.1
 			Added transcription of the actually running script version.
 		v1.0
@@ -88,7 +90,7 @@ $ErrorActionPreference = "SilentlyContinue"
 #---------------------------------------------------
 
 #Script Version
-$sScriptVersion = "v0.1"
+$sScriptVersion = "v1.2"
 
 #Script name
 $sScriptName = "dgtrayicon_cleanup.ps1"
@@ -115,33 +117,33 @@ Function fctIdentifyLegitRegistryEntry{
 			Write-Output "******************************************"
 
 			# Define the Registry folder to search through.
-			$RegPath = "Registry::HKEY_CURRENT_USER\Software\Classes\AppUserModelId"
+			$sRegPath = "Registry::HKEY_CURRENT_USER\Software\Classes\AppUserModelId"
 
 			# Get all Keys in ..\NotifyIconSettings and convert it to only the PSChildName.
-			$RegItems_NotifyIconSettings = (Get-ChildItem -Path $RegPath -Recurse | Select PSChildName).PSChildName
+			$sRegItems_NotifyIconSettings = (Get-ChildItem -Path $sRegPath -Recurse | Select PSChildName).PSChildName
 
 			# Initialize evaluation
-			$RunningAppDetected = $false
+			$bRunningAppDetected = $false
 
 			# Loop through the registry entries.
-			foreach($RegItem in $RegItems_NotifyIconSettings) {
+			foreach($sRegItem in $sRegItems_NotifyIconSettings) {
 				
 				# Filter for NotifyIconGeneratedAumid
-				if ($RegItem -Like 'NotifyIconGeneratedAumid*') {
+				if ($sRegItem -Like 'NotifyIconGeneratedAumid*') {
 					
 					# Check if app is dgtrayicon.exe
-					$regItemApp = Get-ItemPropertyValue -Path "$RegPath\$RegItem" -Name "DisplayName"
+					$sRegItemApp = Get-ItemPropertyValue -Path "$sRegPath\$sRegItem" -Name "DisplayName"
 					
-					if ($regItemApp -eq "dgtrayicon.exe") {
-						$RunningAppDetected = $true
-						$RunningAppKey = $RegItem.Split("_")[1]
-						Write-Output "`nAMD XConnect current Key: $($RunningAppKey) ($regItemApp)"
+					if ($sRegItemApp -eq "dgtrayicon.exe") {
+						$bRunningAppDetected = $true
+						$sRunningAppKey = $sRegItem.Split("_")[1]
+						Write-Output "`nAMD XConnect current Key: $($sRunningAppKey) ($sRegItemApp)"
 					}
 				}
 			}
 
 			# Report, if no matching item was found.
-			if($RunningAppDetected -eq $false) {
+			if($bRunningAppDetected -eq $false) {
 				Write-Output "'nNo running instance of AMD XConnect detected."
 			}
 
@@ -181,43 +183,43 @@ Function fctRegCleanup_HKEY_CURRENT_USER{
 			Write-Output "******************************************"
 
 			# Define the Registry folder to loop through.
-			$RegPath = "Registry::HKEY_CURRENT_USER\Control Panel\NotifyIconSettings"
+			$sRegPath = "Registry::HKEY_CURRENT_USER\Control Panel\NotifyIconSettings"
 
 			# Get all Keys in ..\NotifyIconSettings and convert it to only the PSChildName.
-			$RegItems_NotifyIconSettings = (Get-ChildItem -Path $RegPath -Recurse | Select PSChildName).PSChildName
+			$sRegItems_NotifyIconSettings = (Get-ChildItem -Path $sRegPath -Recurse | Select PSChildName).PSChildName
 
 			# Initialize evaluation
-			$RemnantDetected = $false
+			$bRemnantDetected = $false
 
 			# Loop through the registry entries.
-			foreach($RegItem in $RegItems_NotifyIconSettings) {
+			foreach($sRegItem in $sRegItems_NotifyIconSettings) {
 				
 				# Skip deletion of registry key if belonging to running AMD XConnect instance
-				if ($RegItem -Like $RunningAppKey) {
-					Write-Output "`nRunning instance of AMD XConnect skipped: $($RegItem)"
+				if ($sRegItem -Like $sRunningAppKey) {
+					Write-Output "`nRunning instance of AMD XConnect skipped: $($sRegItem)"
 					continue
 				}
 				
 				# Build the registry path.
-				$CurrentRegItemPath = $RegPath + "\" + $RegItem
+				$sCurrentRegItemPath = $sRegPath + "\" + $sRegItem
 				
 				# Get the App-Name.
-				$CurrentRegItemExecutablePath = Get-ItemPropertyValue -Path $CurrentRegItemPath -Name "ExecutablePath"
+				$sCurrentRegItemExecutablePath = Get-ItemPropertyValue -Path $sCurrentRegItemPath -Name "ExecutablePath"
 				
 				# Filter for dgtrayicon and delete the entry. Also delete an associated
 				# temp file, if found.
-				if ($CurrentRegItemExecutablePath -Like '*dgtrayicon*') {
+				if ($sCurrentRegItemExecutablePath -Like '*dgtrayicon*') {
 					
-					$RemnantDetected = $true
-					Write-Output "`nKey property detected: $($CurrentRegItemExecutablePath)"
+					$bRemnantDetected = $true
+					Write-Output "`nKey property detected: $($sCurrentRegItemExecutablePath)"
 					
-					Remove-Item -Path $CurrentRegItemPath
-					Write-Output "Registry entry deleted: $($CurrentRegItemPath)"
+					Remove-Item -Path $sCurrentRegItemPath
+					Write-Output "Registry entry deleted: $($sCurrentRegItemPath)"
 					
-					$TempFile = "$($env:LOCALAPPDATA)\Temp\NotifyIconGeneratedAumid_$($RegItem).png"
-					if (Test-Path $TempFile) {
-						Remove-Item -Path $TempFile
-						Write-Output "Temp file deleted: $($TempFile)"
+					$sTempFile = "$($env:LOCALAPPDATA)\Temp\NotifyIconGeneratedAumid_$($sRegItem).png"
+					if (Test-Path $sTempFile) {
+						Remove-Item -Path $sTempFile
+						Write-Output "Temp file deleted: $($sTempFile)"
 					} else {
 						Write-Output "Associated temp file not found."
 					}
@@ -259,54 +261,54 @@ Function fctRegCleanup_HKEY_USERS{
 			Write-Output "******************************************`n"
 
 			# Define the Registry folder to loop through.
-			$RegPath = "Registry::HKEY_USERS"
-			$RegUsers = (Get-ChildItem -Path $RegPath)
+			$sRegPath = "Registry::HKEY_USERS"
+			$RegUsers = (Get-ChildItem -Path $sRegPath)
 
 			# Loop through user entries to identify registry remnants
 			foreach($user in $RegUsers) {
 				
-				$iconSubPath = "Control Panel\NotifyIconSettings"
-				$UserNotifyRegPath = "Registry::$($user)\$($iconSubPath)"
+				$sIconSubPath = "Control Panel\NotifyIconSettings"
+				$sUserNotifyRegPath = "Registry::$($user)\$($sIconSubPath)"
 				
 				# Search for \Control Panel\NotifyIconSettings, otherwise skip
-				if (Test-Path $UserNotifyRegPath) {
-					Write-Output "Icon Path found: $($UserNotifyRegPath)"
+				if (Test-Path $sUserNotifyRegPath) {
+					Write-Output "Icon Path found: $($sUserNotifyRegPath)"
 				} else {
 					continue
 				}
 				
 				# Get all Keys in ..\NotifyIconSettings and convert it to only the PSChildName.
-				$RegItems_NotifyIconSettings = (Get-ChildItem -Path $UserNotifyRegPath -Recurse | Select PSChildName).PSChildName
+				$sRegItems_NotifyIconSettings = (Get-ChildItem -Path $sUserNotifyRegPath -Recurse | Select PSChildName).PSChildName
 
 				# Loop through the registry entries.
-				foreach($RegItem in $RegItems_NotifyIconSettings) {
+				foreach($sRegItem in $sRegItems_NotifyIconSettings) {
 					
 					# Skip deletion of registry key if belonging to running AMD XConnect instance
-					if ($RegItem -Like $RunningAppKey) {
-						Write-Output "`nRunning instance of AMD XConnect skipped: $($RegItem)"
+					if ($sRegItem -Like $sRunningAppKey) {
+						Write-Output "`nRunning instance of AMD XConnect skipped: $($sRegItem)"
 						continue
 					}
 					
 					# Build the registry path.
-					$CurrentRegItemPath = $UserNotifyRegPath + "\" + $RegItem
+					$sCurrentRegItemPath = $sUserNotifyRegPath + "\" + $sRegItem
 					
 					# Get the App-Name.
-					$CurrentRegItemExecutablePath = Get-ItemPropertyValue -Path $CurrentRegItemPath -Name "ExecutablePath"
+					$sCurrentRegItemExecutablePath = Get-ItemPropertyValue -Path $sCurrentRegItemPath -Name "ExecutablePath"
 					
 					# Filter for dgtrayicon and delete the entry. Also delete an associated
 					# temp file, if found.
-					if ($CurrentRegItemExecutablePath -Like '*dgtrayicon*') {
+					if ($sCurrentRegItemExecutablePath -Like '*dgtrayicon*') {
 						
-						$RemnantDetected = $true
-						Write-Output "`nKey property detected: $($CurrentRegItemExecutablePath)"
+						$bRemnantDetected = $true
+						Write-Output "`nKey property detected: $($sCurrentRegItemExecutablePath)"
 						
-						Remove-Item -Path $CurrentRegItemPath
-						Write-Output "Registry entry deleted: $($CurrentRegItemPath)"
+						Remove-Item -Path $sCurrentRegItemPath
+						Write-Output "Registry entry deleted: $($sCurrentRegItemPath)"
 						
-						$TempFile = "$($env:LOCALAPPDATA)\Temp\NotifyIconGeneratedAumid_$($RegItem).png"
-						if (Test-Path $TempFile) {
-							Remove-Item -Path $TempFile
-							Write-Output "Temp file deleted: $($TempFile)"
+						$sTempFile = "$($env:LOCALAPPDATA)\Temp\NotifyIconGeneratedAumid_$($sRegItem).png"
+						if (Test-Path $sTempFile) {
+							Remove-Item -Path $sTempFile
+							Write-Output "Temp file deleted: $($sTempFile)"
 						} else {
 							Write-Output "Associated temp file not found."
 						}
@@ -344,7 +346,7 @@ Function fctFinishUp{
 	PROCESS {
 		Try{
 			# Report, if no matching item was found.
-			if($RemnantDetected -eq $false) {
+			if($bRemnantDetected -eq $false) {
 				Write-Output "`nNo matching keys found."
 			}
 

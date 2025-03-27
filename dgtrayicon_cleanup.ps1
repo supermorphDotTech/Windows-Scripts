@@ -27,9 +27,13 @@
 	Author:			Bastian Neuwirth
 	Creation Date:	29.03.2024
 	Modified Date:	30.10.2024
-	Version:		v1.2
+	Version:		v1.3
 	
 	Changelog
+		v1.3
+			Added fctTestIsElevated() to exit prematurely with a warning if the script is not
+			run with elevated privileges.
+			Improved error handling.
 		v1.2
 			Changed variable names to fit the smph standard nomenclature
 		v1.1
@@ -90,7 +94,7 @@ $ErrorActionPreference = "SilentlyContinue"
 #---------------------------------------------------
 
 #Script Version
-$sScriptVersion = "v1.2"
+$sScriptVersion = "v1.3"
 
 #Script name
 $sScriptName = "dgtrayicon_cleanup.ps1"
@@ -102,6 +106,53 @@ $sLogName = "$sScriptName.log"
 #---------------------------------------------------
 #....................[Functions]....................
 #---------------------------------------------------
+
+Function fctTestIsElevated {
+	Param()
+  
+	BEGIN {
+		$bErrors = $false
+	}
+
+	PROCESS {
+		Try{
+			$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+			$principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
+			$scriptRunsElevated = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+			
+			if (-not ($scriptRunsElevated)) {
+				Write-Host  -ForegroundColor red "ERROR: This script is not running with elevated privileges. Please run as Administrator."
+				exit
+			}
+		}
+		Catch{
+			$bErrors = $true
+			$sErr = $_.Exception
+			$sErrLine = $_.InvocationInfo.ScriptLineNumber
+			$sErrMsg = $sErr.Message
+			Write-Host -ForegroundColor red "ERROR at line ${sErrLine}:"
+			Write-Host -ForegroundColor red "$sErrMsg"
+		}
+	}
+
+	END {
+		If($bErrors){
+			#Stop the Script on Error
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
+			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
+				Stop-Transcript
+			}
+			exit
+		} else {
+			#MY CODE IF NO ERRORS
+		}
+	}
+}
+
+
 
 Function fctIdentifyLegitRegistryEntry{
 	Param()
@@ -147,21 +198,28 @@ Function fctIdentifyLegitRegistryEntry{
 				Write-Output "'nNo running instance of AMD XConnect detected."
 			}
 
-	}
+		}
 		Catch{
 			$bErrors = $true
-			Write-Output "ERROR: $_.Exception"
+			$sErr = $_.Exception
+			$sErrLine = $_.InvocationInfo.ScriptLineNumber
+			$sErrMsg = $sErr.Message
+			Write-Host -ForegroundColor red "ERROR at line ${sErrLine}:"
+			Write-Host -ForegroundColor red "$sErrMsg"
 		}
 	}
 
 	END {
 		If($bErrors){
 			#Stop the Script on Error
-			Write-Output "ERROR: Execution stopped."
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
 			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -228,18 +286,25 @@ Function fctRegCleanup_HKEY_CURRENT_USER{
 	}
 		Catch{
 			$bErrors = $true
-			Write-Output "ERROR: $_.Exception"
+			$sErr = $_.Exception
+			$sErrLine = $_.InvocationInfo.ScriptLineNumber
+			$sErrMsg = $sErr.Message
+			Write-Host -ForegroundColor red "ERROR at line ${sErrLine}:"
+			Write-Host -ForegroundColor red "$sErrMsg"
 		}
 	}
 
 	END {
 		If($bErrors){
 			#Stop the Script on Error
-			Write-Output "ERROR: Execution stopped."
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
 			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -318,18 +383,25 @@ Function fctRegCleanup_HKEY_USERS{
 		}
 		Catch{
 			$bErrors = $true
-			Write-Output "ERROR: $_.Exception"
+			$sErr = $_.Exception
+			$sErrLine = $_.InvocationInfo.ScriptLineNumber
+			$sErrMsg = $sErr.Message
+			Write-Host -ForegroundColor red "ERROR at line ${sErrLine}:"
+			Write-Host -ForegroundColor red "$sErrMsg"
 		}
 	}
 
 	END {
 		If($bErrors){
 			#Stop the Script on Error
-			Write-Output "ERROR: Execution stopped."
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
 			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -367,11 +439,14 @@ Function fctFinishUp{
 	END {
 		If($bErrors){
 			#Stop the Script on Error
-			Write-Output "ERROR: Execution stopped."
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
 			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
 				Stop-Transcript
 			}
-			Exit
+			exit
 		} else {
 			#MY CODE IF NO ERRORS
 		}
@@ -396,6 +471,7 @@ Write-Output "******************************************"
 #....................[Execution]....................
 #---------------------------------------------------
 
+fctTestIsElevated
 fctIdentifyLegitRegistryEntry
 fctRegCleanup_HKEY_CURRENT_USER
 fctRegCleanup_HKEY_USERS

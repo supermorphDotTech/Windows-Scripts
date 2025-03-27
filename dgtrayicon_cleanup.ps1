@@ -103,6 +103,9 @@ $sScriptName = "dgtrayicon_cleanup.ps1"
 $bTranscriptEnable = $true
 $sLogName = "$sScriptName.log"
 
+#Check, if running with elevated privileges
+$bCeckIfElevated = $true
+
 #---------------------------------------------------
 #....................[Functions]....................
 #---------------------------------------------------
@@ -116,11 +119,11 @@ Function fctTestIsElevated {
 
 	PROCESS {
 		Try{
-			$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
-			$principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
-			$scriptRunsElevated = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+			$oCurrentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+			$oPrincipal = New-Object Security.Principal.WindowsPrincipal($oCurrentIdentity)
+			$bScriptRunsElevated = $oPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 			
-			if (-not ($scriptRunsElevated)) {
+			if (-not ($bScriptRunsElevated)) {
 				Write-Host  -ForegroundColor red "ERROR: This script is not running with elevated privileges. Please run as Administrator."
 				exit
 			}
@@ -151,8 +154,6 @@ Function fctTestIsElevated {
 		}
 	}
 }
-
-
 
 Function fctIdentifyLegitRegistryEntry{
 	Param()
@@ -467,11 +468,15 @@ Write-Output "   $sScriptName"
 Write-Output "   $sScriptVersion"
 Write-Output "******************************************"
 
+# Check, if running script as admin. If not, exit with error.
+if ($bCeckIfElevated) {
+	fctTestIsElevated
+}
+
 #---------------------------------------------------
 #....................[Execution]....................
 #---------------------------------------------------
 
-fctTestIsElevated
 fctIdentifyLegitRegistryEntry
 fctRegCleanup_HKEY_CURRENT_USER
 fctRegCleanup_HKEY_USERS

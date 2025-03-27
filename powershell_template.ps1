@@ -87,9 +87,57 @@ $sScriptName = "Script Name"
 $bTranscriptEnable = $true
 $sLogName = "$sScriptName.log"
 
+#Check, if running with elevated privileges
+$bCeckIfElevated = $false
+
 #---------------------------------------------------
 #....................[Functions]....................
 #---------------------------------------------------
+
+Function fctTestIsElevated {
+	Param()
+  
+	BEGIN {
+		$bErrors = $false
+	}
+
+	PROCESS {
+		Try{
+			$oCurrentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+			$oPrincipal = New-Object Security.Principal.WindowsPrincipal($oCurrentIdentity)
+			$bScriptRunsElevated = $oPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+			
+			if (-not ($bScriptRunsElevated)) {
+				Write-Host  -ForegroundColor red "ERROR: This script is not running with elevated privileges. Please run as Administrator."
+				exit
+			}
+		}
+		Catch{
+			$bErrors = $true
+			$sErr = $_.Exception
+			$sErrLine = $_.InvocationInfo.ScriptLineNumber
+			$sErrMsg = $sErr.Message
+			Write-Host -ForegroundColor red "ERROR at line ${sErrLine}:"
+			Write-Host -ForegroundColor red "$sErrMsg"
+		}
+	}
+
+	END {
+		If($bErrors){
+			#Stop the Script on Error
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
+			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
+				Stop-Transcript
+			}
+			exit
+		} else {
+			#MY CODE IF NO ERRORS
+		}
+	}
+}
 
 function fctMyFunction{
 	PARAM(
@@ -139,6 +187,11 @@ Write-Output "`n******************************************"
 Write-Output "   $sScriptName"
 Write-Output "   $sScriptVersion"
 Write-Output "******************************************"
+
+# Check, if running script as admin. If not, exit with error.
+if ($bCeckIfElevated) {
+	fctTestIsElevated
+}
 
 #---------------------------------------------------
 #....................[Execution]....................

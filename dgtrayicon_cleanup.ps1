@@ -27,9 +27,11 @@
 	Author:			Bastian Neuwirth
 	Creation Date:	29.03.2024
 	Modified Date:	30.10.2024
-	Version:		v1.3
+	Version:		v1.4
 	
 	Changelog
+		v1.4
+			Added check for sufficient PowerShell version: fctCheckPSVersion()
 		v1.3
 			Added fctTestIsElevated() to exit prematurely with a warning if the script is not
 			run with elevated privileges.
@@ -90,14 +92,14 @@ if (-not (Test-Path $sLogFolder)) {
 $ErrorActionPreference = "SilentlyContinue"
 
 #Minimum PowerShell version required
-$sPsMinVersion = "10.1" # Due to cmdlet 'Get-ItemPropertyValue'
+$sPsMinVersion = "5.1" # Due to cmdlet 'Get-ItemPropertyValue'
 
 #---------------------------------------------------
 #..................[Declarations]...................
 #---------------------------------------------------
 
 #Script Version
-$sScriptVersion = "v1.3"
+$sScriptVersion = "v1.4"
 
 #Script name
 $sScriptName = "dgtrayicon_cleanup.ps1"

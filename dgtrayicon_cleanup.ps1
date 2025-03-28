@@ -89,6 +89,9 @@ if (-not (Test-Path $sLogFolder)) {
 #Set Error Action to Silently Continue
 $ErrorActionPreference = "SilentlyContinue"
 
+#Minimum PowerShell version required
+$sPsMinVersion = "10.1" # Due to cmdlet 'Get-ItemPropertyValue'
+
 #---------------------------------------------------
 #..................[Declarations]...................
 #---------------------------------------------------
@@ -109,6 +112,54 @@ $bCeckIfElevated = $true
 #---------------------------------------------------
 #....................[Functions]....................
 #---------------------------------------------------
+
+Function fctCheckPSVersion {
+	Param(
+		[string]$sPsMinVersion
+	)
+  
+	BEGIN {
+		$bErrors = $false
+	}
+
+	PROCESS {
+		Try{
+			# Retrieve the current PowerShell version
+			$sPsVersion = $PSVersionTable.PSVersion
+			
+			# Compare the current version with $sPsMinVersion
+			if ($sPsVersion -lt [version]"$sPsMinVersion") {
+				Write-Host -ForegroundColor red "ERROR: Current PowerShell version ($sPsVersion) is less than the required $sPsMinVersion. Please update your PowerShell."
+				exit
+			} else {
+				Write-Output "PowerShell version check passed: $sPsVersion"
+			}
+		}
+		Catch{
+			$bErrors = $true
+			$sErr = $_.Exception
+			$sErrLine = $_.InvocationInfo.ScriptLineNumber
+			$sErrMsg = $sErr.Message
+			Write-Host -ForegroundColor red "ERROR at line ${sErrLine}:"
+			Write-Host -ForegroundColor red "$sErrMsg"
+		}
+	}
+
+	END {
+		If($bErrors){
+			Write-Host ""
+			Write-Host -ForegroundColor red "Execution aborted."
+			Read-Host "Press Enter to exit."
+			if ($bTranscriptEnable) {
+				Write-Host -ForegroundColor red "Review transcript $sTranscript"
+				Stop-Transcript
+			}
+			exit
+		} else {
+			#MY CODE IF NO ERRORS
+		}
+	}
+}
 
 Function fctTestIsElevated {
 	Param()
@@ -467,6 +518,9 @@ Write-Output "`n******************************************"
 Write-Output "   $sScriptName"
 Write-Output "   $sScriptVersion"
 Write-Output "******************************************"
+
+#Check, if Powershell version is sufficient
+fctCheckPSVersion -sPsMinVersion $sPsMinVersion
 
 # Check, if running script as admin. If not, exit with error.
 if ($bCeckIfElevated) {

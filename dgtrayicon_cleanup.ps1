@@ -196,7 +196,7 @@ Function fctIdentifyLegitRegistryEntry{
 
 			# Report, if no matching item was found.
 			if($bRunningAppDetected -eq $false) {
-				Write-Output "'nNo running instance of AMD XConnect detected."
+				Write-Output "`nNo running instance of AMD XConnect detected."
 			}
 
 		}
